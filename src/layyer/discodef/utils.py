@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from getData import *
+from .getData import *
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
