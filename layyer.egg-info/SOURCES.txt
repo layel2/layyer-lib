@@ -8,6 +8,7 @@ layyer.egg-info/top_level.txt
 src/layyer/__init__.py
 src/layyer/discodef/__init__.py
 src/layyer/discodef/cifar10_model.py
+src/layyer/discodef/disco_model.py
 src/layyer/discodef/getData.py
 src/layyer/discodef/mnist_model.py
 src/layyer/discodef/utils.py
