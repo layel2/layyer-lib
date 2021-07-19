@@ -55,7 +55,7 @@ class normalMnist():
 
 class attackMnist():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None):
 
         normal_data = normalMnist(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
@@ -82,12 +82,16 @@ class attackMnist():
         self.data = x_atk.cpu()
         if quantize:
             self.data = (self.data * 255).type(torch.int) / 255.
+        
+        self.shuffle = True if data_type=='train' else False
+        if shuffle is not None:
+            self.shuffle = shuffle
 
         if for_trainning:
             self.loader = torch.utils.data.DataLoader(train_dataSet(self.noarmal_data, self.labels, self.data),
-                                                      batch_size=loader_batch)
+                                                      batch_size=loader_batch,shuffle=self.shuffle)
         else:
-            self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch)
+            self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch,shuffle=self.shuffle)
 
 
 class FMNISTdata():
@@ -128,7 +132,7 @@ class normalFMnist():
 
 class attackFMnist():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None):
 
         normal_data = normalFMnist(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
@@ -155,12 +159,15 @@ class attackFMnist():
         self.data = x_atk.cpu()
         if quantize:
             self.data = (self.data * 255).type(torch.int) / 255.
+        self.shuffle = True if data_type=='train' else False
+        if shuffle is not None:
+            self.shuffle = shuffle
 
         if for_trainning:
             self.loader = torch.utils.data.DataLoader(train_dataSet(self.noarmal_data, self.labels, self.data),
-                                                      batch_size=loader_batch)
+                                                      batch_size=loader_batch,shuffle=self.shuffle)
         else:
-            self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch)
+            self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch,shuffle=self.shuffle)
 
 
 
@@ -193,7 +200,7 @@ class normalCifar10():
 
 class attackCifar10():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None):
 
         normal_data = normalCifar10(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
@@ -221,11 +228,15 @@ class attackCifar10():
         if quantize:
             self.data = (self.data * 255).type(torch.int) / 255.
 
+        self.shuffle = True if data_type=='train' else False
+        if shuffle is not None:
+            self.shuffle = shuffle
+
         if for_trainning:
             self.loader = torch.utils.data.DataLoader(train_dataSet(self.noarmal_data, self.labels, self.data),
-                                                      batch_size=loader_batch)
+                                                      batch_size=loader_batch,shuffle=self.shuffle)
         else:
-            self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch)
+            self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch,shuffle=self.shuffle)
 
 
 class train_dataSet(torch.utils.data.Dataset):

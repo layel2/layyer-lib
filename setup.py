@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="layyer", # Replace with your own username
-    version="0.0.11",
+    version="0.0.12",
     author="Pranpaveen Lay.",
     author_email="pranpaveen.lay@gmail.com",
     description="layyer lib",
