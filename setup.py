@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="layyer", # Replace with your own username
-    version="0.0.8",
+    version="0.0.11",
     author="Pranpaveen Lay.",
     author_email="pranpaveen.lay@gmail.com",
     description="layyer lib",
@@ -20,6 +20,6 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires= ['numpy'],
+    install_requires= ['numpy','advertorch'],
     python_requires='>=3.6',
 )

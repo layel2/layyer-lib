@@ -11,11 +11,12 @@ from .getData import *
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
-def test(model, loder_test, print_val=True, rand_seed=0):
+def test(model, loder_test, print_val=True,set_seed=False, rand_seed=0):
     model.eval()
     test_loss = 0
     correct = 0
-    # torch.manual_seed(rand_seed)
+    if set_seed:
+        torch.manual_seed(rand_seed)
     with torch.no_grad():
         for data, target in loder_test:
             data = data.to(device)
@@ -34,11 +35,12 @@ def test(model, loder_test, print_val=True, rand_seed=0):
         return float(100. * correct / len(loder_test.dataset))
 
 
-def test_gba(model, loder_test, g_ba, print_val=True, rand_seed=0):
-    # torch.manual_seed(rand_seed)
+def test_gba(model, loder_test, g_ba, print_val=True,set_seed=False, rand_seed=0):
     model.eval()
     test_loss = 0
     correct = 0
+    if set_seed:
+        torch.manual_seed(rand_seed)
     with torch.no_grad():
         for data, target in loder_test:
             data = data.to(device)

@@ -37,16 +37,20 @@ class dataSet(torch.utils.data.Dataset):
 
 
 class normalMnist():
-    def __init__(self, data_type="test", loader_batch=128):
+    def __init__(self, data_type="test", loader_batch=128,shuffle=None):
         data = MNISTdata()
         if data_type == 'train':
             self.data = data.train_data
             self.labels = data.train_labels
+            self.shuffle = True
         else:
             self.data = data.test_data
             self.labels = data.test_labels
+            self.shuffle = False
+        if shuffle is not None:
+            self.shuffle = shuffle
 
-        self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch)
+        self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch,shuffle=self.shuffle)
 
 
 class attackMnist():
@@ -86,6 +90,80 @@ class attackMnist():
             self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch)
 
 
+class FMNISTdata():
+    def __init__(self):
+        self.num_channel = 1
+        self.img_size = 28
+        self.num_lables = 10
+        data_train = torchvision.datasets.FashionMNIST('./', train=True, download=True,
+                                                transform=torchvision.transforms.ToTensor())
+        data_test = torchvision.datasets.FashionMNIST('./', train=False, download=True,
+                                               transform=torchvision.transforms.ToTensor())
+
+        self.train_data = torch.mul(data_train.data, 1 / 255).reshape((-1, 1, 28, 28)).type(torch.float32)
+        self.train_labels = data_train.targets
+        self.test_data = torch.mul(data_test.data, 1 / 255).reshape((-1, 1, 28, 28)).type(torch.float32)
+        self.test_labels = data_test.targets
+
+
+
+
+class normalFMnist():
+    def __init__(self, data_type="test", loader_batch=128,shuffle=None):
+        data = FMNISTdata()
+        if data_type == 'train':
+            self.data = data.train_data
+            self.labels = data.train_labels
+            self.shuffle = True
+        else:
+            self.data = data.test_data
+            self.labels = data.test_labels
+            self.shuffle = False
+        
+        if shuffle is not None:
+            self.shuffle = shuffle
+
+        self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch, shuffle=self.shuffle)
+
+
+class attackFMnist():
+    def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False):
+
+        normal_data = normalFMnist(data_type=data_type, loader_batch=loader_batch)
+        self.noarmal_data = normal_data.data
+        self.labels = normal_data.labels
+
+        x_atk = torch.tensor([]).to(device)
+        bs = loader_batch
+        for batch_data, batch_labels in normal_data.loader:
+            if (attack_method == "FGSM"):
+                if isinstance(eps, str):
+                    batch_pn = FGSM(attack_model, loss_fn=atk_loss, getAtkpn=True).perturb(batch_data.to(device),
+                                                                                           batch_labels.to(device))
+                    eps_temp = (1) * torch.rand((len(batch_pn), 1, 1, 1))
+                    eps_temp = eps_temp.to(device)
+                    batch_atk = torch.clamp(batch_data.to(device) + eps_temp * batch_pn, min=0, max=1)
+                else:
+                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps).perturb(batch_data.to(device),
+                                                                                      batch_labels.to(device))
+            if (attack_method == "PGD"):
+                batch_atk = PGDAttack(attack_model, loss_fn=atk_loss, eps=eps).perturb(batch_data.to(device),
+                                                                                       batch_labels.to(device))
+            x_atk = torch.cat((x_atk, batch_atk))
+        # x_atk = torch.tensor(x_atk)
+        self.data = x_atk.cpu()
+        if quantize:
+            self.data = (self.data * 255).type(torch.int) / 255.
+
+        if for_trainning:
+            self.loader = torch.utils.data.DataLoader(train_dataSet(self.noarmal_data, self.labels, self.data),
+                                                      batch_size=loader_batch)
+        else:
+            self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels), batch_size=loader_batch)
+
+
+
 class cifar10_data():
     def __init__(self):
         self.num_channel = 3
@@ -99,16 +177,19 @@ class cifar10_data():
         self.test_labels = torch.Tensor(data_test.targets).type(torch.long)
 
 class normalCifar10():
-    def __init__(self, data_type = "test",loader_batch=128):
+    def __init__(self, data_type = "test",loader_batch=128,shuffle=None):
         data = cifar10_data()
         if data_type == 'train' :
             self.data = data.train_data
             self.labels = data.train_labels
-            self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels),batch_size=loader_batch,shuffle=True)
+            self.shuffle = True
         else :
             self.data = data.test_data
             self.labels = data.test_labels
-            self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels),batch_size=loader_batch)
+            self.shuffle = False
+        if shuffle is not None:
+            self.shuffle = shuffle
+        self.loader = torch.utils.data.DataLoader(dataSet(self.data, self.labels),batch_size=loader_batch,shuffle=self.shuffle)
 
 class attackCifar10():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
