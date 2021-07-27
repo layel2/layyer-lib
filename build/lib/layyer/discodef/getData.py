@@ -1,7 +1,7 @@
 import torchvision
 import torch
 import numpy as np
-from advertorch.attacks import PGDAttack
+from advertorch.attacks import PGDAttack,CarliniWagnerL2Attack
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -55,7 +55,7 @@ class normalMnist():
 
 class attackMnist():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={}):
 
         normal_data = normalMnist(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
@@ -66,17 +66,19 @@ class attackMnist():
         for batch_data, batch_labels in normal_data.loader:
             if (attack_method == "FGSM"):
                 if isinstance(eps, str):
-                    batch_pn = FGSM(attack_model, loss_fn=atk_loss, getAtkpn=True).perturb(batch_data.to(device),
+                    batch_pn = FGSM(attack_model, loss_fn=atk_loss, getAtkpn=True,**attack_params).perturb(batch_data.to(device),
                                                                                            batch_labels.to(device))
                     eps_temp = (1) * torch.rand((len(batch_pn), 1, 1, 1))
                     eps_temp = eps_temp.to(device)
                     batch_atk = torch.clamp(batch_data.to(device) + eps_temp * batch_pn, min=0, max=1)
                 else:
-                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps).perturb(batch_data.to(device),
+                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps,**attack_params).perturb(batch_data.to(device),
                                                                                       batch_labels.to(device))
-            if (attack_method == "PGD"):
-                batch_atk = PGDAttack(attack_model, loss_fn=atk_loss, eps=eps).perturb(batch_data.to(device),
+            elif (attack_method == "PGD"):
+                batch_atk = PGDAttack(attack_model, loss_fn=atk_loss, eps=eps,**attack_params).perturb(batch_data.to(device),
                                                                                        batch_labels.to(device))
+            elif attack_method == "CW":
+                batch_atk = CarliniWagnerL2Attack(attack_model,num_classes=10,loss_fn=atk_loss, **attack_params).perturb(batch_data.to(device),batch_labels.to(device))
             x_atk = torch.cat((x_atk, batch_atk))
         # x_atk = torch.tensor(x_atk)
         self.data = x_atk.cpu()
@@ -132,7 +134,7 @@ class normalFMnist():
 
 class attackFMnist():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={}):
 
         normal_data = normalFMnist(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
@@ -143,17 +145,19 @@ class attackFMnist():
         for batch_data, batch_labels in normal_data.loader:
             if (attack_method == "FGSM"):
                 if isinstance(eps, str):
-                    batch_pn = FGSM(attack_model, loss_fn=atk_loss, getAtkpn=True).perturb(batch_data.to(device),
+                    batch_pn = FGSM(attack_model, loss_fn=atk_loss, getAtkpn=True,**attack_params).perturb(batch_data.to(device),
                                                                                            batch_labels.to(device))
                     eps_temp = (1) * torch.rand((len(batch_pn), 1, 1, 1))
                     eps_temp = eps_temp.to(device)
                     batch_atk = torch.clamp(batch_data.to(device) + eps_temp * batch_pn, min=0, max=1)
                 else:
-                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps).perturb(batch_data.to(device),
+                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps,**attack_params).perturb(batch_data.to(device),
                                                                                       batch_labels.to(device))
             if (attack_method == "PGD"):
-                batch_atk = PGDAttack(attack_model, loss_fn=atk_loss, eps=eps).perturb(batch_data.to(device),
+                batch_atk = PGDAttack(attack_model, loss_fn=atk_loss, eps=eps,**attack_params).perturb(batch_data.to(device),
                                                                                        batch_labels.to(device))
+            elif attack_method == "CW":
+                batch_atk = CarliniWagnerL2Attack(attack_model,num_classes=10,loss_fn=atk_loss, **attack_params).perturb(batch_data.to(device),batch_labels.to(device))
             x_atk = torch.cat((x_atk, batch_atk))
         # x_atk = torch.tensor(x_atk)
         self.data = x_atk.cpu()
@@ -200,7 +204,7 @@ class normalCifar10():
 
 class attackCifar10():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={}):
 
         normal_data = normalCifar10(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
@@ -211,17 +215,19 @@ class attackCifar10():
         for batch_data, batch_labels in normal_data.loader:
             if (attack_method == "FGSM"):
                 if isinstance(eps, str):
-                    batch_pn = FGSM(attack_model, loss_fn=atk_loss, getAtkpn=True).perturb(batch_data.to(device),
+                    batch_pn = FGSM(attack_model, loss_fn=atk_loss, getAtkpn=True,**attack_params).perturb(batch_data.to(device),
                                                                                            batch_labels.to(device))
                     eps_temp = (1) * torch.rand((len(batch_pn), 1, 1, 1))
                     eps_temp = eps_temp.to(device)
                     batch_atk = torch.clamp(batch_data.to(device) + eps_temp * batch_pn, min=0, max=1)
                 else:
-                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps).perturb(batch_data.to(device),
+                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps,**attack_params).perturb(batch_data.to(device),
                                                                                       batch_labels.to(device))
             if (attack_method == "PGD"):
-                batch_atk = PGDAttack(attack_model, loss_fn=atk_loss, eps=eps).perturb(batch_data.to(device),
+                batch_atk = PGDAttack(attack_model, loss_fn=atk_loss, eps=eps,**attack_params).perturb(batch_data.to(device),
                                                                                        batch_labels.to(device))
+            elif attack_method == "CW":
+                batch_atk = CarliniWagnerL2Attack(attack_model,num_classes=10,loss_fn=atk_loss, **attack_params).perturb(batch_data.to(device),batch_labels.to(device))
             x_atk = torch.cat((x_atk, batch_atk))
         # x_atk = torch.tensor(x_atk)
         self.data = x_atk.cpu()
