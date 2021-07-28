@@ -55,7 +55,7 @@ class normalMnist():
 
 class attackMnist():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={}):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_iter=10,attack_params={}):
 
         normal_data = normalMnist(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
@@ -79,6 +79,10 @@ class attackMnist():
                                                                                        batch_labels.to(device))
             elif attack_method == "CW":
                 batch_atk = CarliniWagnerL2Attack(attack_model,num_classes=10,loss_fn=atk_loss, **attack_params).perturb(batch_data.to(device),batch_labels.to(device))
+            elif attack_method == "iFGSM":
+                batch_atk = batch_data
+                for _ in range(attack_iter):
+                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps/attack_iter, **attack_params).perturb(batch_atk.to(device), batch_labels.to(device))
             x_atk = torch.cat((x_atk, batch_atk))
         # x_atk = torch.tensor(x_atk)
         self.data = x_atk.cpu()
@@ -134,7 +138,7 @@ class normalFMnist():
 
 class attackFMnist():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={}):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={},attack_iter=10):
 
         normal_data = normalFMnist(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
@@ -158,6 +162,10 @@ class attackFMnist():
                                                                                        batch_labels.to(device))
             elif attack_method == "CW":
                 batch_atk = CarliniWagnerL2Attack(attack_model,num_classes=10,loss_fn=atk_loss, **attack_params).perturb(batch_data.to(device),batch_labels.to(device))
+            elif attack_method == "iFGSM":
+                batch_atk = batch_data
+                for _ in range(attack_iter):
+                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps/attack_iter, **attack_params).perturb(batch_atk.to(device), batch_labels.to(device))
             x_atk = torch.cat((x_atk, batch_atk))
         # x_atk = torch.tensor(x_atk)
         self.data = x_atk.cpu()
@@ -204,7 +212,7 @@ class normalCifar10():
 
 class attackCifar10():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={}):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={},atter_iter=10):
 
         normal_data = normalCifar10(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
@@ -228,6 +236,10 @@ class attackCifar10():
                                                                                        batch_labels.to(device))
             elif attack_method == "CW":
                 batch_atk = CarliniWagnerL2Attack(attack_model,num_classes=10,loss_fn=atk_loss, **attack_params).perturb(batch_data.to(device),batch_labels.to(device))
+            elif attack_method == "iFGSM":
+                batch_atk = batch_data
+                for _ in range(attack_iter):
+                    batch_atk = FGSM(attack_model, loss_fn=atk_loss, eps=eps/attack_iter, **attack_params).perturb(batch_atk.to(device), batch_labels.to(device))
             x_atk = torch.cat((x_atk, batch_atk))
         # x_atk = torch.tensor(x_atk)
         self.data = x_atk.cpu()
