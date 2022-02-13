@@ -68,7 +68,7 @@ class mnistmodel_C(nn.Module):
 
 class mnistmodel_B_old(nn.Module):
     def __init__(self):
-        super(mnistmodel_B, self).__init__()
+        super(mnistmodel_B_old, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=8, stride=2, padding=3)
         self.conv2 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=6, stride=2)
         self.conv3 = nn.Conv2d(in_channels=128, out_channels=128, kernel_size=5, stride=1)
@@ -90,7 +90,7 @@ class mnistmodel_B_old(nn.Module):
 
 class mnistmodel_C_old(nn.Module):
     def __init__(self):
-        super(mnistmodel_C, self).__init__()
+        super(mnistmodel_C_old, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(in_channels=128, out_channels=64, kernel_size=5, stride=2)
         self.dense1 = nn.Linear(in_features=12 * 12 * 64, out_features=120)
