@@ -212,7 +212,7 @@ class normalCifar10():
 
 class attackCifar10():
     def __init__(self, attack_model, attack_method="FGSM", eps=0.3, data_type="test", rand_seed=0, rand_min=0,
-                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={},atter_iter=10):
+                 rand_max=1, loader_batch=128, for_trainning=False, atk_loss=None, quantize=False,shuffle=None,attack_params={},attack_iter=10):
 
         normal_data = normalCifar10(data_type=data_type, loader_batch=loader_batch)
         self.noarmal_data = normal_data.data
